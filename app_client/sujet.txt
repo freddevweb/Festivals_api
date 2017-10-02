@@ -1,0 +1,38 @@
+TP : Javascript Orienté Objet
+Instructions : 
+
+ - Choisir un des sujets proposés
+ - 3 niveaux de difficulté : Difficile, Moyen, Facile( mais pas loin de moyen :p)
+ - Les sujets sont découpés en 4 parties de plus en plus difficiles : Il faut les réaliser dans l’ordre ! 
+ - Etant donné qu'on ne sait pas encore lier entre elles deux applications différentes, les deux premiers sujets sont séparé en deux parties        : Gestion globale et gestion utilisateurs, ces deux parties se trouvent sur la même page même si ce n'est pas forcément logique… (comme       l'exercice de la carte et des filtres par types)
+ - On code DU DEBUT je ne veux pas voir un ancien exercice récupéré et des gens galérer à essayer de reconnecter l’ancien code avec leur        nouveau code. Autant tout refaire, on progresse mieux comme ça.
+
+
+#Application Festivals : (Moyen)
+------- On va gérer des festivals sur maps ----------
+I.Gestion globale de la carte
+    - Créer via un formulaire des festivals : 
+        - Nom du festival
+        - Localisation (lat, lng) -> Compléter ces champs en cliquant sur la carte
+        - Date de début et de fin (picker)
+        - Type(s) de musique (checkboxes)
+        - Icone / Logo ( l'url devrait suffire :) )
+    - Le festival apparaît avec le logo adéquat sur la carte 
+    - Quand on clique sur un festival les détails s'affichent
+
+II.Gestion de l'utilisateur 
+    - Faire un formulaire de filtrage : 
+        - Nom
+        - Date de début et de fin (picker)
+        - Type(s) de musique (checkboxes)
+    - Le tri est instantané (pas de submit)
+    - On affiche que les événements filtrés
+
+III.Participation (à partir de là on passe en Difficile)
+    - On peut demander à participer  à un événement (Bouton “Participer dans la description”)
+    - Dans ce cas, l'événement apparaît dans une liste "Je participe à :"
+    - Quand on clique sur l'événement il y a écrit en vert dans la description "J'y participe"
+    - Quand on clique sur un événement en cours il y a écrit “En cours”
+
+IV.Sauvegarde
+    - Garder les festivals en localStorage

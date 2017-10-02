@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Festivals</title>
+    <link rel="stylesheet" href="assets/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" />
+    <link rel="stylesheet" href="assets/css/font-awesome-4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <script src="assets/js/jquery.js"></script>
+    <script src="assets/js/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+
+</head>
+<body>
+    <div id="main">
+
+        <section id="map"></section>
+        <div id="legend">
+            <h2><strong>NEXT</strong></h2>
+        </div>
+
+        <section id="forms">
+            <header>
+                <h1>Festivals</h1>
+            </header>
+            <div id="menu">
+                <button id="signinBtn" title="S'enregistrer">
+                    <i class="fa fa-address-card-o" aria-hidden="true"></i>
+                </button>
+                <button id="loginBtn" title="Se connecter">
+                    <i class="fa fa-sign-in" aria-hidden="true"></i>
+                </button>
+                <button id="chercherBtn" title="Chercher un festival">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                </button>
+                <button id="ajouterBtn"title="Ajouter un festival">
+                    <i class="fa fa-plus" aria-hidden="true"></i>
+                </button>
+                <button id="logoutBtn" title="Se déconnecter">
+                    <i class="fa fa-sign-out" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <div id="content">
+
+                <!-- II gestion utilisateur -->
+    
+                <div id="chercherGroup">
+                    <h2>Chercher un festival</h2>
+                    <form id="chercherFestival">
+                        <div class="form-group">
+                            <select id="nomSearch"  class="search nomSearch">
+                                <option>Choisissez un festival</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="dateDebutSearch" placeholder="Date de début" />
+                            <input type="text" id="dateFinSearch" class="search dateFinSearch" placeholder="Date de fin" />
+                        </div>
+                        <div id="checkboxeSearch" class="form-group checkboxes"></div>
+                        <div class="error"></div>
+                    </form>
+                    
+                </div>
+                <div id="mesParticipations">
+                    <h2>Mes festivals :</h2>
+                    <div id="participation"></div>
+                </div>
+
+                <!-- gestion globale -->
+                <div id="ajouterGroup">
+                    <h2>Ajouter un festival</h2>
+                    <form id="formAjouter">
+                        <div class="form-group">
+                            <input type="text" id="nom" placeholder="Nom du festival" />
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="dateDebut" placeholder="Date de début" />
+                            <input type="text" id="dateFin" placeholder="Date de fin" />
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="urlLogo" placeholder="Lien du logo du festival" />
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="position" placeholder="Géolocalisation du festival" disabled/>
+                        </div>
+                        <div id="checkboxeAdd" class="form-group checkboxes">
+                            
+                        </div>
+                                                    
+                        
+                        <input type="submit" value="Ajouter" />
+                    </form>
+                    <div class="error"></div>
+                </div>
+            </div>
+            
+        </section>
+    </div>
+
+    <div id="login" class="modal">
+        <div class="modal-content">
+            <span id="closeLog" class="close">&times;</span>
+            <h2>Connection</h2>
+            <form id="loginForm">
+                <input type="text" id="logUse" data-value="use" class="eltForm" placeholder="pseudo ou e-mail" />
+                <input type="password" id="pass" data-value="pass" class="eltForm" placeholder="mot de passe" />
+                <input type="submit" value="Se connecter" />
+            </form>
+        </div>
+    </div>
+
+    <div id="signin" class="modal">
+        <div class="modal-content">
+            <span id="closeSign" class="close">&times;</span>
+            <h2>Enregistrement</h2>
+            <form id="signinForm">
+                <input type="text" id="signName" data-value="name" class="eltForm" placeholder="Votre pseudo" />
+                <input type="text" id="signEmail" data-value="email" class="eltForm" placeholder="email" />
+                <input type="password" id="signPass" data-value="pass" class="eltForm" placeholder="mot de passe" />
+                <input type="submit" value="S'enregistrer" />
+            </form>
+        </div>
+    </div>
+    
+
+    <script src="assets/js/md.js"></script>
+    <script src="assets/js/markercluster.js"></script>
+    <script src="assets/js/App.js"></script>
+    <script src="assets/js/main.js"></script>
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFeyRYHmKQngMTP4FJX1Ve-6zUpOtAniU&callback=app.initMap"
+    async defer></script>
+    
+</body>
+</html>
