@@ -39,6 +39,8 @@ h1 {
 #legend {
     width: 100px;
     position: absolute;
+    top: 50px;
+    left: 0px;
   }
 
 #legend h2 {
@@ -249,8 +251,7 @@ input[type=submit] {
     cursor: pointer;
 }
 
-
-
+/* ######################################### */
 /* ######################################### */
 .block {
     display: block;
@@ -261,4 +262,8 @@ input[type=submit] {
 
 .red {
     background-color: rgba(255, 0, 0, 0.5);
+}
+
+.hidden {
+    display: none;
 }

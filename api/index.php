@@ -145,7 +145,7 @@ Flight::route('DELETE /festival/@id', function( $id ){
     $bddManager = Flight::get( "BddManager" );
     $repo = $bddManager->getFestivalRepository();
     $count = $repo->deleteFestival( $newFestival );
-    var_dump($count);
+
     if( $count != 0 ){
         $status["success"] = true;
     }
@@ -375,7 +375,7 @@ Flight::route('POST /participation', function(){
     $repo = $bddManager->getUserRepository();
     
     $id = $repo->insertParticipation( $userId , $festivalId );
-    var_dump($id);
+
     if( $id > 0){
 
         $status["success"] = true;

@@ -1,5 +1,5 @@
 var app = new App();
-localStorage.clear("festivals");
+// localStorage.clear("festivals");
 
 // ########################### menu
 
@@ -9,9 +9,12 @@ app.$chercherBtn.click(function(){
 
         app.$ajouterGroup.css("display", "none");
     }
+    if( app.$mesParticipations.css("display") == "block" ){
+        
+        app.$mesParticipations.css("display", "none");
+    }
 
     app.$chercherGroup.css( "display", "block" );
-    app.$mesParticipations.css( "display", "block" );
 });
 
 app.$ajouterBtn.click(function(){
@@ -19,9 +22,26 @@ app.$ajouterBtn.click(function(){
 
         app.$chercherGroup.css( "display", "none" );    
     }
+    if( app.$mesParticipations.css("display") == "block" ){
+        
+        app.$mesParticipations.css("display", "none");
+    }
 
     app.$mesParticipations.css( "display", "none" );
     app.$ajouterGroup.css("display", "block");
+});
+
+app.$participBtn.click(function(){
+    if( app.$chercherGroup.css( "display" ) == "block" ){
+
+        app.$chercherGroup.css( "display", "none" );    
+    }
+    if( app.$ajouterGroup.css("display") == "block" ){
+        
+        app.$ajouterGroup.css("display", "none");
+    }
+
+    app.$mesParticipations.css( "display", "block" );
 });
 
 // ########################### modal
@@ -57,6 +77,7 @@ window.onclick = function( event ) {
     }
 }
 
+// validation form
 app.$eltForm.focusout( function(){
 
     var controlSet = app.formValueControl( $( this ).attr( "data-value" ) , $( this ).val() );
@@ -67,31 +88,21 @@ app.$eltForm.focusout( function(){
     }
     if ( controlSet.control == false ){
         $( this ).addClass( "red" );
-        $( this ).removeAttr( "data-validate" );
+        $( this ).attr( "data-validate", "false");
         // $( this ).parent().children("error") = controlSet.msg;
     }
 
 })
 
+// submit form
 app.$loginForm.submit( function( event ){
     event.preventDefault();
 
     var $use = $(this).children("#logUse");
-    var $pass = $(this).children("#logPass");
+    var $pass = $(this).children("#pass");
 
-    var use = "";
-    var email = "";
-    var pass = "";
-
-    if( $use.attr("data-validate") == true ){
-        use = $use.val();
-    }
-    if( $pass.attr("data-validate") == true ){
-        pass = $pass.val();
-    }
-
-    if( use != "" && pass != "" ){
-        app.login( pass, use );
+    if( $use.val() != "" && $use.attr("data-validate") == "true" && $pass.val() != "" && $pass.attr("data-validate") == "true"){
+        app.login( MD5( $pass.val() ) , $use.val() );
     }
 })
 
@@ -139,7 +150,8 @@ app.main = function(){
     // when maps is ready execute this
     app.readParticipation();
     app.readFestivals();
-    app.addToLegend();
+
+    moralite();
     
 
 
@@ -192,7 +204,7 @@ app.main = function(){
             var image = {
                 url: app.$urlLogo.val()
             };
-
+            
             app.addFestival( 
                 app.positionTemp, 
                 app.$nom.val(), 
@@ -214,7 +226,8 @@ app.main = function(){
 
 
     // ########################### form search festival
-    app.$searchElts.change(function(){
+
+    $( document ).on("change", ".search", function(){
 
         if( app.$nomSearch.val() != "Choisissez un festival" ){
 
@@ -236,16 +249,15 @@ app.main = function(){
             }
         };
 
-        if( $( this ).attr("class") == "search check" ){
+        if( $( this ).attr("class") == "search checkSearch" ){
             
             if( $( this ).is(":checked") ){
-                
-                app.selection.types[$( this ).attr("id")] = true;
-                
+                console.log($(this).attr("id").toLowerCase());
+                app.selection.types[$( this ).attr("id").toLowerCase()] = true;
             }
             else {
 
-                app.selection.types[$( this ).attr("id")] = false;
+                app.selection.types[$(this).attr("id").toLowerCase()] = false;
             }
         }
 
@@ -262,10 +274,8 @@ app.main = function(){
             $( this ).addClass( "red" );
             $( this ).text( "Ne plus participer" );
             var id = $( this ).attr( "id" ).replace("_btn", "");
-            var title = id.replace(/_/g,' ')
-            app.addParticipation( title );
-            console.log( title );
-
+            var dataId = $( this ).attr("data-id");
+            app.addParticipation( dataId );
 
             return;
         }
@@ -300,12 +310,38 @@ app.main = function(){
     });
 
 }
+app.$logoutBtn.click( function(){
+    
+    app.$signinBtn.css( "display" ,"block" );
+    app.$loginBtn.css( "display" ,"block" );
+
+    app.$chercherBtn.css( "display" ,"none" );
+    app.$logoutBtn.css( "display" ,"none" );
+    app.$participBtn.css("display", "none");
+
+    app.$mesParticipations.css( "display" ,"none" );
+
+    app.user = false;
+
+    app.$ajouterBtn.css( "display" ,"none" );
+
+    $( ".participation" ).addClass("hidden");
+});
+
 
 // ###################################  A LA FERMETURE
 
 window.onbeforeunload = function(){
-    app.saveFestivals();
-    app.saveParticipation();
+
+    app.saveProfile();
+    app.saveFestivalsLocal();
+    if( app.connection == false ){
+        app.saveLocalStorage();
+    }
 }
 
+
+function moralite(){
+    alert("Moralité du tp : il vaut mieux appliquer les grand principes de jquery : 'less is more' => de petites fonctions qui font chacune une petite chose que de grosses fonctions et on s'y perd !")
+}
 

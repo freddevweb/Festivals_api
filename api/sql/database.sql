@@ -13,7 +13,8 @@ CREATE TABLE user (
 	id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 	name VARCHAR(255) CHARACTER SET utf8 NOT NULL,
 	email VARCHAR(255) UNIQUE NOT NULL,
-	pass VARCHAR(255) NOT NULL
+	pass VARCHAR(255) NOT NULL,
+    tockenAccess varchar(255) 
 
 )engine=innodb DEFAULT CHARSET=latin1 ;
 
@@ -104,8 +105,8 @@ ADD CONSTRAINT  FK_participate_festival
 -- ################################################ INSERT
 LOCK TABLE user WRITE ;
 INSERT INTO user VALUES
-( 1, "fred", "fred@mail.com", "f022b8970604d7f4472189cb21df2c20" ),
-( 2, "pierre", "pierre@mail.com", "5fa9db2e335ef69a4eeb9fe7974d61f4" );
+( 1, "fred", "fred@mail.com", "8bc602bffd3386269b2a794375da8087132bcc15", "cc6826a6e9bbe4f2e11ea5647efadeb9954c75c1" ),
+( 2, "pierre", "pierre@mail.com", "5fa9db2e335ef69a4eeb9fe7974d61f4", "21ecd5a75038e2c1c70af2e05bfbb671b9f497cb" );
 UNLOCK TABLES ;
 
 

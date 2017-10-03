@@ -10,6 +10,7 @@ class App {
         this.$logoutBtn = $( "#logoutBtn" );
         this.$chercherBtn = $( "#chercherBtn" );
         this.$ajouterBtn = $( "#ajouterBtn" );
+        this.$participBtn = $( "#participBtn" );
         // map
         this.$map = $( "#map" )[0];
         this.$legend = $( "#legend" );
@@ -32,7 +33,6 @@ class App {
         // form filter
         this.$chercherGroup = $( "#chercherGroup" );
         this.$nomSearch = $( "#nomSearch" );
-        this.$searchElts = $( ".search" );
         this.$dateDebutSearch = $( "#dateDebutSearch" );
         this.$dateFinSearch = $( "#dateFinSearch" );
         this.$variete = $( "#variete" );
@@ -51,7 +51,8 @@ class App {
         // user
         this.user = false;
         // api 
-        this.url = "http://localhost/2_dev_idem/4_webservices/Festivals_api/api/"
+        this.url = "http://localhost/2_dev_idem/4_webservices/Festivals_api/api/";
+        this.connection = false;
         // datepicker
         this.dateMin = new Date( Date.now() );
         this.dateMin2 = null;
@@ -69,7 +70,6 @@ class App {
             LatLng : {lat: 46.52863469527167, lng: 2.43896484375},
             zoom : 6
         }
-        // this.locations = [];
         // search
         this.selection = {
             "name" : "",
@@ -93,24 +93,46 @@ class App {
         this.now = Date.now();
         // regex variables
         this.regexDate = /^([0-3][0-9])\-[0-1][0-9]\-[0-9]{4}$/;
+        // for outline
+        this.participationOutline = [];
+        this.festivalsOutline = [];
+        this.musiquesOutline = {};
         
         //  ######################################################
         //  ######### function
-        
+        this.checkConnect();
+        this.readProfile();
         this.setElements();
-        this.initCheckbox();
         this.initDatepicker();
+        this.initCheckbox();
+    }
+
+    // test Connection
+    checkConnect(){
+        
+        if( navigator.onLine == true ){
+            this.connection = true;
+            
+        }
+        else {
+            this.connection = false;
+        }
+        return navigator.onLine;
     }
 
     setElements(){
 
         if( this.user != false ){
-
+            
             if( this.user.id > 0 ){
 
+                this.$signinBtn.css( "display" ,"none" );
+                this.$loginBtn.css( "display" ,"none" );
+
                 this.$chercherBtn.css( "display" ,"block" );
-                
-                if( this.user.role = 2 ){
+                this.$participBtn.css( "display" ,"block" );
+
+                if( this.user.role == 2 ){
                     this.$chercherGroup.css("display" , "block" );
                     this.$ajouterBtn.css( "display" ,"block" );
                 }
@@ -124,56 +146,75 @@ class App {
         }
     }
 
+
+
     initCheckbox(){
 
         var that = this;
 
-        $.ajax({
-            
-            url: that.url + "musiques",
-            dataType :  "json",
-            method :    "GET",
-            success : function( data ){
+        if( this.checkConnect() == true && this.connection == true ){
 
-                for( var music of data){
+            $.ajax({
+                
+                url: that.url + "musiques",
+                dataType :  "json",
+                method :    "GET",
+                success : function( data ){
 
-                    var checkbox = '<span class="checkbox-line">';
-                    checkbox += '<input type="checkbox" id="' + music.name + '" value="' + music.id  + '">';
-                    checkbox += '<label for="' + music.name + '">' + music.name.toUpperCase() + '</label>';
-                    checkbox += '</span>';
-
-                    that.$checkboxeSearch.append(checkbox);
-                    that.$checkboxeAdd.append(checkbox);
-                    that.musiques[music.id] = music.name;
-                }
-            },
-            error : function( error ){ 
-                console.log(error);
-            }  
-        });
+                    for( var music of data){
+    
+                        var checkbox = '<span class="checkbox-line">';
+                        checkbox += '<input type="checkbox" id="' + music.name + '" value="' + music.name  + '"class="search checkSearch">';
+                        checkbox += '<label for="' + music.name + '">' + music.name.toUpperCase() + '</label>';
+                        checkbox += '</span>';
+    
+                        that.$checkboxeSearch.append(checkbox);
+                        that.$checkboxeAdd.append(checkbox);
+                        that.musiques[music.id] = music.name;
+                    }
+                },
+                error : function( error ){ 
+                    console.log(error);
+                }  
+            });
+        }
     }
 
-    // USER
+    // // ########################### USER
 
     login( pass, use ){
 
         var that = this;
 
-        var passLog = MD5( pass );
-
         $.ajax({
             
-            url: that.url + "user/" + passLog + "/" + use ,
+            url: that.url + "user/" + pass + "/" + use ,
             dataType :  "json",
             method :    "get",
             success : function( data ){
 
-                console.log(data);
+                that.user = data.user;
+                $( ".participation" ).removeClass("hidden");
+
+                that.setElements();
+                that.$modalLogin[0].style.display = "none";
             },
             error : function( error ){ 
                 console.log(error);
             }  
         });
+
+        if( this.connection == true ){
+
+            if( localStorage.lastData != undefined ){
+                
+                var lastDatasSavedOuline = localStorage.getItem( "lastData" );
+                
+                var arrayDatas = JSON.parse( lastDatasSavedOuline ); 
+                            
+                this.uploadDataSaved( arrayDatas );
+            }
+        }
     }
 
     signin( name , email, pass ){
@@ -256,7 +297,7 @@ class App {
             );
     }
 
-    addFestival( position, titre, type, logo, debut, fin ){
+    addFestival( position, titre, type, logo, debut, fin, id ){
 
         var encours = false;
 
@@ -278,7 +319,7 @@ class App {
             icon : image
         });
         
-
+        festival.id = id;
         festival.type = type;
         festival.debut = debut;
         festival.fin = fin;
@@ -289,7 +330,7 @@ class App {
         
         this.festivals.push( festival );
 
-        var infowindow = this.addInfoWindow( festival, titre, type, debut, fin, encours);
+        var infowindow = this.addInfoWindow( festival, titre, type, debut, fin, encours, id);
         
         var that = this;
         festival.addListener('click', function() {
@@ -299,7 +340,7 @@ class App {
         return festival;
     };
 
-    addInfoWindow( marker, titre, type, debut, fin, enCours ){
+    addInfoWindow( marker, titre, type, debut, fin, enCours, id ){
 
         var newDebut = new Date( debut );
         var dateDebut = newDebut.getDate() + "/" + newDebut.getMonth() + "/" + newDebut.getFullYear();
@@ -318,25 +359,26 @@ class App {
         }
         contentInfo += '</ul>';
 
-        if( this.user != false ){
+        var participBtn = "";
+        if( enCours == true ){
+            participBtn = '<div class"participation"> Festival en Cours</div>'; 
+        }
+        else{
 
-            if( enCours == true ){
-                contentInfo += '<div class"participation"> Festival en Cours</div>'; 
+            var hide = "";
+            if( this.user == false ){
+                hide = "hidden";
+            }
+
+            if( this.participation.indexOf( titre ) != -1 ){
+                participBtn = '<button id="' + titre.replace( /\s/g,'_' ) + '_btn" data-id="' + id + '" class="participation red' + hide + '">Ne plus participer</button>';
             }
             else {
-    
-                if( this.participation.indexOf( titre ) != -1 ){
-                    contentInfo += '<button id="' + titre.replace( /\s/g,'_' ) + '_btn" class="participation red">Ne plus participer</button>';
-                }
-                else {
-                    contentInfo += '<button id="' + titre.replace( /\s/g,'_' ) + '_btn" class="participation green">Je participe</button>';
-                }
+                participBtn = '<button id="' + titre.replace( /\s/g,'_' ) + '_btn" data-id="' + id + '" class="participation green ' + hide + '">Je participe</button>';
             }
         }
-        
-        
 
-        
+        contentInfo += participBtn;
         contentInfo += '</div></div>';
 
         var infowindow = new google.maps.InfoWindow({
@@ -361,70 +403,147 @@ class App {
             }, 4000 );
         })
     }
-
-
-    saveFestivals(){
-
-        var arrayFestivals = [];
-
-        for( var festival of this.festivals ){
-            var objectFestivals = {
-                position : festival.position,
-                titre : festival.title,
-                type : festival.type,
-                logo : festival.icon.url,
-                debut : festival.debut,
-                fin : festival.fin
-            };
-
-            arrayFestivals.push( objectFestivals );
-        }
-        var festivalsString = JSON.stringify( arrayFestivals );
-        localStorage.setItem( "festivals", festivalsString );
+// ###########################################################
+// ##########################################################
+    saveFestivals( title, dateDebut, dateFin, urlLogo, lat, lng, musiqueType){
         
+        if( this.checkConnect() == true && this.connection == true ){
+
+            $.ajax({
+                
+                url: that.url + "festival",
+                dataType :  "json",
+                method :    "POST",
+                data : {
+                    title : title,
+                    dateDebut : dateDebut,
+                    dateFin : dateFin,
+                    urlLogo : urlLogo,
+                    lat : lat,
+                    lng : lng,
+                    musiqueType : musiqueType
+                },
+                success : function( data ){
+                    console.log(data);
+                },
+                error : function( error ){ 
+                    console.log(error);
+                }  
+            });
+        }
+        else {
+
+            var objectFestivals = {
+                title : title,
+                dateDebut : dateDebut,
+                dateFin : dateFin,
+                urlLogo : urlLogo,
+                lat : lat,
+                lng : lng,
+                musiqueType : musiqueType
+            };
+    
+            this.festivalsOutline.push( objectFestivals );
+        }
     }
 
+    saveFestivalsLocal(){
 
+        var localSave = {};
+
+        var festivalForSave = [];
+
+        for( var festival of this.festivals ){
+
+            var objetFestival = {
+                title : festival.title,
+                dateDebut : festival.debut,
+                dateFin : festival.fin,
+                urlLogo : festival.icon.url,
+                lat : festival.position.lat(),
+                lng : festival.position.lng(),
+                musiqueType : festival.type
+            }
+
+            festivalForSave.push( objetFestival );
+        }
+
+        localSave.festivals = festivalForSave;
+        localSave.musiques = this.musiques;
+        localSave.participation = this.participation;
+
+        var localSaveString = JSON.stringify( localSave );
+        localStorage.setItem( "festivals", localSaveString );
+    }
+    
     readFestivals(){
 
         var that = this;
-        
+
+        if( this.checkConnect() == true && this.connection == true){
+
             $.ajax({
                 
                 url: that.url + "festivals",
                 dataType :  "json",
                 method :    "GET",
                 success : function( data ){
-    
-                    for( var festivalObjet of data ){
 
-                        var position = {
-                            lat : parseFloat(festivalObjet.lat),
-                            lng : parseFloat(festivalObjet.lng)
-                        }
-
-                        that.addFestival(
-                            position,
-                            festivalObjet.title,
-                            festivalObjet.musiqueType,
-                            festivalObjet.urlLogo,
-                            festivalObjet.dateDebut,
-                            festivalObjet.dateFin
-                        );
-                        
-                        that.addOptions( festivalObjet.title );
-            
-                        if( that.participation.indexOf( festivalObjet.title ) != -1 ){
-            
-                            that.addParticipation( festivalObjet.title );
-                        }
-                    }
-                    that.addMarkerCluster();
+                    that.generateFestival( data );
                 },
                 error : function( error ){ 
                     console.log(error);
                 }  
             });
+        }
+        else {
+
+            var festivalsString = localStorage.getItem( "festivals" );
+            var data = JSON.parse( festivalsString );
+
+            this.generateFestival( data.festivals );
+            this.musiques = data.musiques;
+            this.participation.push( data.participation );
+        }
+    }
+
+    generateFestival( data ){
+
+        for( var festivalObjet of data ){
+
+            var position = {
+                lat : parseFloat(festivalObjet.lat),
+                lng : parseFloat(festivalObjet.lng)
+            }
+
+            this.addFestival(
+                position,
+                festivalObjet.title,
+                festivalObjet.musiqueType,
+                festivalObjet.urlLogo,
+                festivalObjet.dateDebut,
+                festivalObjet.dateFin,
+                festivalObjet.id
+            );
+            
+            this.addOptions( festivalObjet.title );
+
+            if( this.participation.indexOf( festivalObjet.title ) != -1 ){
+
+                this.addParticipation( festivalObjet.title );
+            }
+        }
+        this.addMarkerCluster();
+
+        if( this.user != false ){
+
+            for( var elt of this.user.participate ){
+
+                this.displayParticipaton( elt );
+            }
+        }
+        
+        app.addToLegend();
     }
 
     addOptions( titre ){
@@ -434,15 +553,21 @@ class App {
     }
     
 
-    filter$chercherBtns(){
-
+    filterElts(){
+        
         for( var festival of this.festivals ){
 
             festival.setVisible( false );
-
+            // console.log(this.selection);
             if( festival.title.replace( /\s/g,'_' ) == this.selection.name ) {
+                
+                if( this.selection.name == "" ){
 
-                festival.setVisible( true );
+                    festival.setVisible( true );
+                }
+                else{
+                    festival.setVisible( true );
+                }
             }
 
             if( festival.debut <= this.selection.dates.debut && festival.fin >= this.selection.dates.fin ) {
@@ -451,8 +576,10 @@ class App {
             }
             
             for( var typ of festival.type ){
+                
+                var nameType = this.musiques[typ].toLowerCase();
 
-                if( this.selection.types[typ] == true ){
+                if( this.selection.types[nameType] == true ){
 
                     festival.setVisible( true );
                 }
@@ -461,26 +588,61 @@ class App {
     }
     
 
-    addParticipation( festivalName ){
+    addParticipation( festivalId ){
         
-        if( this.participation.indexOf( festivalName ) == -1){
+        var that = this;
+        
+        if( this.checkConnect() == true  && this.connection == true ){
 
-            this.participation.push( festivalName );
+            $.ajax({
+                
+                url: that.url + "participation",
+                dataType :  "json",
+                method :    "POST",
+                data: {
+                    userId : that.user.id,
+                    festivalId : festivalId,
+                },
+                success : function( data ){
+                    // console.log(data);
+                    if( data.success == true ){
+
+                        that.user.participate.push( festivalId );
+
+                        that.displayParticipation( festivalId );
+                    }
+                },
+                error : function( error ){ 
+                    console.log(error);
+                }  
+            });
+        }
+        else {
+
+            this.connection = false;
+
+            if( this.participation.indexOf( festivalId ) == -1){
+                
+                this.participation.push( festivalId );
+            }
+            
+            this.displayParticipation( festivalId );
         }
         
-        var festivals = this.festivals;
-        function object( festival ){
-            return festival.title === festivalName;
-        }
-        var curentFestival = this.festivals.find( object );
 
+    }
+
+    displayParticipaton( festivalId ){
+
+        var curentFestival = this.festivals[festivalId - 1];
+        
         var newDebut = new Date( curentFestival.debut );
         var dateDebut = newDebut.getDate() + "/" + newDebut.getMonth() + "/" + newDebut.getFullYear();
         var newFin = new Date( curentFestival.fin );
         var dateFin = newFin.getDate() + "/" + newFin.getMonth() + "/" + newFin.getFullYear();
 
-        var divParticip = '<div id="participation_' + festivalName.replace( /\s/g,'_' ) + '" class="blocParticip" >';
-        divParticip += '<h3>' + festivalName + '</h3>';
+        var divParticip = '<div id="participation_' + this.festivals[festivalId - 1].title.replace( /\s/g,'_' ) + '" class="blocParticip" >';
+        divParticip += '<h3>' + this.festivals[festivalId - 1].title + '</h3>';
         divParticip += '<div>';
         divParticip += '<span>Du ' + dateDebut + ' au ' + dateFin + '</span>';
         divParticip += '<span class="localiser">Localiser</span>';
@@ -489,7 +651,9 @@ class App {
         
         this.$participation.append( divParticip );
     }
-
+// ********************************************************
+// ***********************************************************
+// ************************************************************
     removeParticipation( titre ){
 
         var index = this.participation.indexOf( titre );
@@ -497,13 +661,9 @@ class App {
 
         $( "#" + 'participation_' + titre.replace(/\s/g,'_') ).remove();
     }
-
-    saveParticipation(){
-        
-        var participationString = JSON.stringify( this.participation );
-        localStorage.setItem( "participation", participationString );
-    }
-
+// ********************************************************
+// ***********************************************************
+// ************************************************************
     readParticipation(){
 
         var participationString = localStorage.getItem( "participation" );
@@ -545,7 +705,7 @@ class App {
         this.map.setZoom( coords.zoom );
     }
 
-    addToLegend( ){
+    addToLegend(){
 
         function tri(a,b)
         {
@@ -554,7 +714,6 @@ class App {
             else return 1;
         }
          
-        
         this.festivals.sort(tri);
 
         for( var festival of this.festivals ){
@@ -599,8 +758,6 @@ class App {
         return ( ( yDif * 365 ) + ( mDif * 30 ) + dDif );
     }
 
-
-
     formValueControl( type, value ){
 
         var regEmail = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
@@ -610,11 +767,12 @@ class App {
             control : false
         }
 
-        if( type == "name"){
-            if( value.length < 6 ){
-                controlSet.msg = "Pseudo trop court (6 min)";
-            };
-        }
+        // // POUR LES TESTS CES OPTIONS SONT DESACTIVEES
+        // if( type == "name"){
+        //     if( value.length < 6 ){
+        //         controlSet.msg = "Pseudo trop court (6 min)";
+        //     };
+        // }
         if( type == "email" ){
             if( value.length == 0 ){
                 controlSet.msg = "Email non saisi";
@@ -623,20 +781,22 @@ class App {
                 controlSet.msg = "Email non valide";
             };
         }
-        if( type == "pass" ){
-            if( value.length < 6 ){
-                controlSet.msg = "Mot de passe trop court (8 min)";
-            };
-            if( value.match(/[a-z]{4}/)  == null ){
-                controlSet.msg = "Le mot de passe doit contenir au moins 4 caractères en minuscule";
-            };
-            if( value.match(/[1-9]{2}/)  == null ){
-                controlSet.msg = "Le mot de passe doit contenir au moins 2 caractères numériques";
-            };
-            if( value.match(/[A-Z]{2}/)  == null ){
-                controlSet.msg = "Le mot de passe doit contenir au moins 2 caractères majuscules";
-            };
-        }
+
+        // // POUR LES TESTS CES OPTIONS SONT DESACTIVEES
+        // if( type == "pass" ){
+        //     if( value.length < 6 ){
+        //         controlSet.msg = "Mot de passe trop court (8 min)";
+        //     };
+        //     if( value.match(/[a-z]{4}/)  == null ){
+        //         controlSet.msg = "Le mot de passe doit contenir au moins 4 caractères en minuscule";
+        //     };
+        //     if( value.match(/[1-9]{2}/)  == null ){
+        //         controlSet.msg = "Le mot de passe doit contenir au moins 2 caractères numériques";
+        //     };
+        //     if( value.match(/[A-Z]{2}/)  == null ){
+        //         controlSet.msg = "Le mot de passe doit contenir au moins 2 caractères majuscules";
+        //     };
+        // }
 
         if( controlSet.msg.length == 0 ){
             controlSet.control = true;
@@ -645,13 +805,80 @@ class App {
         return controlSet;
     }
 
+    saveProfile(){
 
-    encodePass( pass ){
+        var userString = JSON.stringify( this.user );
+        localStorage.setItem( "festivalProfil", userString );
+    }
 
+    readProfile(){
+
+        var userString = localStorage.getItem( "festivalProfil" );
+
+        var userObject = JSON.parse(userString);
+
+        if( userObject == false ){
+            return;
+        }
+
+        this.login( userObject.pass , userObject.name );
+    }
+
+    saveLocalStorage(){
+
+        var saveOnLocal = [];
+        
+        saveOnLocal['lastConnection'] =  false;
+
+
+        if( app.participationOutline != "" ){
+            
+            saveOnLocal["participation"] = app.participationOutline;
+        }
+
+        if( app.festivalsOutline != "" ){
+            
+            saveOnLocal["festival"] = app.festivalsOutline;
+        }
+
+        var saveDataOutline = JSON.stringify( saveOnLocal );
+        localStorage.setItem( "lastData", saveOnLocal );
     }
 
 
+    uploadDataSaved( arrayDatas ){
 
+        if( arrayDatas["participation"] != "" ){
+            console.log( arrayDatas["participation"] );
+            
+            // this.addParticipation( dataId );
+        }
 
+        if( arrayDatas["festival"] != "" ){
+            console.log( arrayDatas["festival"] );
+            // this.addFestival();
+        }
 
+        for( var festivalObjet of arrayFestivals ){
+            
+            this.addFestival(
+
+                festivalObjet.position,
+                festivalObjet.titre,
+                festivalObjet.type,
+                festivalObjet.logo,
+                festivalObjet.debut,
+                festivalObjet.fin
+            );
+
+            this.addOptions( festivalObjet.titre );
+
+            if( this.participation.indexOf( festivalObjet.titre ) != -1 ){
+
+                this.addParticipation( festivalObjet.titre );
+            }
+        }
+
+        this.addMarkerCluster();
+    }
 }

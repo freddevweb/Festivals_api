@@ -61,13 +61,54 @@ class UserRepository extends Repository {
 		return $result;  
 	}
 
+	private function accessTocken( User $user ){
+
+		$name = $user->getName();
+		$email = $user->getEmail();
+		$pass = $user->getPass();
+
+		$rand = int( rand( 0, 5) );
+
+		// nom email pass 
+		if( $rand == 0){
+			$string = $rand.$name.$email.$pass;
+		}
+		// nom pass email 
+		if( $rand == 1){
+			$string = $rand.$name.$pass.$email;
+		}
+		// email nom pass
+		if( $rand == 2){
+			$string = $rand.$email.$name.$pass;
+		}
+		// email pass nom
+		if( $rand == 3){
+			$string = $rand.$email.$pass.$name;
+		}
+		// pass nom email 
+		if( $rand == 4){
+			$string = $rand.$pass.$name.$email;
+		}
+		// pass email nom 
+		if( $rand == 5){
+			$string = $rand.$pass.$email.$name;
+		}
+
+		$tocken = sha1($string);
+
+
+	}
+
 	function insert( User $user ){
+
+		$tocken = $this->accessTocken( $user );
 
 		$query = "INSERT INTO user SET name = :name, email = :email, pass = :pass";
 		$values = array(
 			"name" => $user->getName(),
 			"email" => $user->getEmail(),
-			"pass" => $user->getPass()
+			"pass" => $user->getPass(),
+			"tockenAccess" => $tocken
 		);
 
 		$prep = $this->connection->prepare( $query );
